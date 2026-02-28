@@ -2,51 +2,34 @@
 require_once 'db.php';
 session_start();
 
-// Level + Search Filtering
+// === Filtering: Level + Search + Published Only ===
 $levelFilter = $_GET['level'] ?? '';
 $search = trim($_GET['search'] ?? '');
 
 $whereParts = [];
 $params = [];
 
+// Level filter
 if ($levelFilter === 'ug') {
     $whereParts[] = 'LevelID = 1';
 } elseif ($levelFilter === 'pg') {
     $whereParts[] = 'LevelID = 2';
 }
 
+// Keyword search
 if (!empty($search)) {
     $whereParts[] = '(ProgrammeName LIKE :search OR Description LIKE :search)';
     $params['search'] = "%$search%";
 }
 
-$whereClause = empty($whereParts) ? '' : 'WHERE ' . implode(' AND ', $whereParts);
+// Hide unpublished programmes from students
+$whereParts[] = 'is_published = 1';
 
-$stmt = $pdo->prepare("
-    SELECT ProgrammeID, ProgrammeName, LevelID, Description, Image 
-    FROM Programmes 
-    $whereClause 
-    ORDER BY ProgrammeName
-");
-$stmt->execute($params);
-$programmes = $stmt->fetchAll();
-
-// Add level condition if filter is set
-if ($levelFilter === 'ug') {
-    $whereParts[] = 'LevelID = 1';
-} elseif ($levelFilter === 'pg') {
-    $whereParts[] = 'LevelID = 2';
-}
-
-// You can add is_published = 1 later when you implement publish/unpublish
-// $whereParts[] = 'is_published = 1';
-
-// Build WHERE clause
 $whereClause = empty($whereParts) ? '' : 'WHERE ' . implode(' AND ', $whereParts);
 
 // Fetch filtered programmes
 $stmt = $pdo->prepare("
-    SELECT ProgrammeID, ProgrammeName, Description, Image
+    SELECT ProgrammeID, ProgrammeName, LevelID, Description, Image
     FROM Programmes
     $whereClause
     ORDER BY ProgrammeName
@@ -65,11 +48,12 @@ $programmes = $stmt->fetchAll();
     <style>
         .card-img-top { height: 180px; object-fit: cover; }
         body { background-color: #f8f9fa; }
-        .nav-link.active { font-weight: bold; color: #ffc107 !important; }
+        .nav-link.active { font-weight: bold; color: #ffc107 !important; border-bottom: 2px solid #ffc107; }
     </style>
 </head>
 <body>
 
+<!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.php">Student Course Hub</a>
@@ -93,17 +77,20 @@ $programmes = $stmt->fetchAll();
 </nav>
 
 <div class="container my-5">
-    <h1 class="text-center mb-5">Explore Our Programmes</h1>
-<form method="GET" class="mb-4">
-    <div class="input-group">
-        <input type="text" name="search" class="form-control" placeholder="Search programmes (e.g. Cyber, AI, Machine Learning)" 
-               value="<?= htmlspecialchars($search ?? '') ?>">
-        <button class="btn btn-primary" type="submit">Search</button>
-    </div>
-</form>
+    <h1 class="text-center mb-4">Explore Our Programmes</h1>
+
+    <!-- Search Form -->
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search programmes (e.g. Cyber Security, AI, Machine Learning)" 
+                   value="<?= htmlspecialchars($search) ?>">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
     <?php if (empty($programmes)): ?>
         <div class="alert alert-info text-center">
-            No programmes match your filter<?php if ($levelFilter): ?> (<?= $levelFilter === 'ug' ? 'Undergraduate' : 'Postgraduate' ?>)<?php endif; ?> at the moment.
+            No programmes match your criteria<?php if ($levelFilter || $search): ?> (try different filters or search terms)<?php endif; ?>.
         </div>
     <?php else: ?>
         <div class="row">
@@ -113,7 +100,7 @@ $programmes = $stmt->fetchAll();
                         <?php if (!empty($prog['Image'])): ?>
                             <img src="<?= htmlspecialchars($prog['Image']) ?>" 
                                  class="card-img-top" 
-                                 alt="Programme image for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
+                                 alt="Image for programme: <?= htmlspecialchars($prog['ProgrammeName']) ?>">
                         <?php else: ?>
                             <img src="https://via.placeholder.com/400x180?text=<?= urlencode(substr($prog['ProgrammeName'], 0, 20)) ?>" 
                                  class="card-img-top" 
