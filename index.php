@@ -2,14 +2,14 @@
 require_once 'db.php';
 session_start();
 
-// === Filtering: Level + Search + Published Only ===
+// === Combined Filtering: Level + Search + Published Only ===
 $levelFilter = $_GET['level'] ?? '';
 $search = trim($_GET['search'] ?? '');
 
 $whereParts = [];
 $params = [];
 
-// Level filter
+// Level filter (UG = 1, PG = 2)
 if ($levelFilter === 'ug') {
     $whereParts[] = 'LevelID = 1';
 } elseif ($levelFilter === 'pg') {
@@ -22,9 +22,10 @@ if (!empty($search)) {
     $params['search'] = "%$search%";
 }
 
-// Hide unpublished programmes from students
+// Only show published programmes to students
 $whereParts[] = 'is_published = 1';
 
+// Build WHERE clause
 $whereClause = empty($whereParts) ? '' : 'WHERE ' . implode(' AND ', $whereParts);
 
 // Fetch filtered programmes
@@ -48,7 +49,7 @@ $programmes = $stmt->fetchAll();
     <style>
         .card-img-top { height: 180px; object-fit: cover; }
         body { background-color: #f8f9fa; }
-        .nav-link.active { font-weight: bold; color: #ffc107 !important; border-bottom: 2px solid #ffc107; }
+        .nav-link.active { font-weight: bold; color: #ffc107 !important; border-bottom: 2px solid #ffc107; padding-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -80,8 +81,8 @@ $programmes = $stmt->fetchAll();
     <h1 class="text-center mb-4">Explore Our Programmes</h1>
 
     <!-- Search Form -->
-    <form method="GET" class="mb-4">
-        <div class="input-group">
+    <form method="GET" class="mb-5">
+        <div class="input-group input-group-lg">
             <input type="text" name="search" class="form-control" placeholder="Search programmes (e.g. Cyber Security, AI, Machine Learning)" 
                    value="<?= htmlspecialchars($search) ?>">
             <button class="btn btn-primary" type="submit">Search</button>
@@ -89,22 +90,22 @@ $programmes = $stmt->fetchAll();
     </form>
 
     <?php if (empty($programmes)): ?>
-        <div class="alert alert-info text-center">
-            No programmes match your criteria<?php if ($levelFilter || $search): ?> (try different filters or search terms)<?php endif; ?>.
+        <div class="alert alert-info text-center py-4">
+            No programmes match your criteria<?php if ($levelFilter || $search): ?> — try different filters or search terms<?php endif; ?>.
         </div>
     <?php else: ?>
-        <div class="row">
+        <div class="row g-4">
             <?php foreach ($programmes as $prog): ?>
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4">
                     <div class="card h-100 shadow-sm">
                         <?php if (!empty($prog['Image'])): ?>
                             <img src="<?= htmlspecialchars($prog['Image']) ?>" 
                                  class="card-img-top" 
-                                 alt="Image for programme: <?= htmlspecialchars($prog['ProgrammeName']) ?>">
+                                 alt="Programme image: <?= htmlspecialchars($prog['ProgrammeName']) ?>">
                         <?php else: ?>
                             <img src="https://via.placeholder.com/400x180?text=<?= urlencode(substr($prog['ProgrammeName'], 0, 20)) ?>" 
                                  class="card-img-top" 
-                                 alt="Placeholder image for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
+                                 alt="Placeholder for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
                         <?php endif; ?>
 
                         <div class="card-body d-flex flex-column">
