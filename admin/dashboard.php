@@ -2,7 +2,7 @@
 require_once '../db.php';
 session_start();
 
-// Protect the page
+// Protect the page - only logged-in admins can see this
 if (!isset($_SESSION['admin_id'])) {
     header('Location: login.php');
     exit;
@@ -19,49 +19,46 @@ if (!isset($_SESSION['admin_id'])) {
 </head>
 <body class="bg-light">
 
+<!-- Navigation Bar -->
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">Admin Dashboard</span>
-        <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+        <a class="navbar-brand" href="dashboard.php">Admin Dashboard</a>
+        <div class="d-flex">
+            <span class="text-light me-3">Logged in as Admin</span>
+            <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
     </div>
 </nav>
 
 <div class="container my-5">
-    <h1 class="text-center mb-5">Welcome to the Admin Area</h1>
+    <h1 class="text-center mb-5">Admin Controls</h1>
 
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
         <!-- Card 1: Manage Programmes -->
-        <div class="col-md-4">
-            <div class="card shadow h-100">
+        <div class="col-md-5 col-lg-4">
+            <div class="card shadow h-100 border-primary">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Manage Programmes</h5>
-                    <p class="card-text">Publish/unpublish programmes, edit names, descriptions, images, etc.</p>
+                    <h5 class="card-title text-primary">Manage Programmes</h5>
+                    <p class="card-text">Publish or unpublish programmes, edit names, descriptions, images, leaders, etc.</p>
                     <a href="manage-programmes.php" class="btn btn-primary">Go to Manage Programmes</a>
                 </div>
             </div>
         </div>
 
         <!-- Card 2: View Interested Students -->
-        <div class="col-md-4">
-            <div class="card shadow h-100">
+        <div class="col-md-5 col-lg-4">
+            <div class="card shadow h-100 border-success">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Interested Students</h5>
-                    <p class="card-text">View and export mailing lists of students who registered interest.</p>
+                    <h5 class="card-title text-success">Interested Students</h5>
+                    <p class="card-text">View mailing lists of students who registered interest in programmes.</p>
                     <a href="view-interested.php" class="btn btn-success">View Mailing Lists</a>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Card 3: Placeholder for future (e.g., Manage Modules) -->
-        <div class="col-md-4">
-            <div class="card shadow h-100">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Manage Modules</h5>
-                    <p class="card-text">Add, update or delete modules (coming soon).</p>
-                    <button class="btn btn-secondary disabled">Not yet available</button>
-                </div>
-            </div>
-        </div>
+    <div class="text-center mt-5">
+        <small class="text-muted">More features (e.g., manage modules, staff profiles) can be added later.</small>
     </div>
 </div>
 
