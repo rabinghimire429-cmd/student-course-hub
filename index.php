@@ -1,14 +1,57 @@
 <?php
 require_once 'db.php';
-session_start(); // for future messages
+session_start();
 
-// Fetch all visible programmes (we'll add publish filter later)
+// Level + Search Filtering
+$levelFilter = $_GET['level'] ?? '';
+$search = trim($_GET['search'] ?? '');
+
+$whereParts = [];
+$params = [];
+
+if ($levelFilter === 'ug') {
+    $whereParts[] = 'LevelID = 1';
+} elseif ($levelFilter === 'pg') {
+    $whereParts[] = 'LevelID = 2';
+}
+
+if (!empty($search)) {
+    $whereParts[] = '(ProgrammeName LIKE :search OR Description LIKE :search)';
+    $params['search'] = "%$search%";
+}
+
+$whereClause = empty($whereParts) ? '' : 'WHERE ' . implode(' AND ', $whereParts);
+
+$stmt = $pdo->prepare("
+    SELECT ProgrammeID, ProgrammeName, LevelID, Description, Image 
+    FROM Programmes 
+    $whereClause 
+    ORDER BY ProgrammeName
+");
+$stmt->execute($params);
+$programmes = $stmt->fetchAll();
+
+// Add level condition if filter is set
+if ($levelFilter === 'ug') {
+    $whereParts[] = 'LevelID = 1';
+} elseif ($levelFilter === 'pg') {
+    $whereParts[] = 'LevelID = 2';
+}
+
+// You can add is_published = 1 later when you implement publish/unpublish
+// $whereParts[] = 'is_published = 1';
+
+// Build WHERE clause
+$whereClause = empty($whereParts) ? '' : 'WHERE ' . implode(' AND ', $whereParts);
+
+// Fetch filtered programmes
 $stmt = $pdo->prepare("
     SELECT ProgrammeID, ProgrammeName, Description, Image
     FROM Programmes
+    $whereClause
     ORDER BY ProgrammeName
 ");
-$stmt->execute();
+$stmt->execute($params);
 $programmes = $stmt->fetchAll();
 ?>
 
@@ -22,6 +65,7 @@ $programmes = $stmt->fetchAll();
     <style>
         .card-img-top { height: 180px; object-fit: cover; }
         body { background-color: #f8f9fa; }
+        .nav-link.active { font-weight: bold; color: #ffc107 !important; }
     </style>
 </head>
 <body>
@@ -29,13 +73,20 @@ $programmes = $stmt->fetchAll();
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.php">Student Course Hub</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">All Programmes</a></li>
-                <!-- Filters/search added in next steps -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $levelFilter === '' ? 'active' : '' ?>" href="index.php">All Programmes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $levelFilter === 'ug' ? 'active' : '' ?>" href="index.php?level=ug">Undergraduate</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $levelFilter === 'pg' ? 'active' : '' ?>" href="index.php?level=pg">Postgraduate</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -43,23 +94,39 @@ $programmes = $stmt->fetchAll();
 
 <div class="container my-5">
     <h1 class="text-center mb-5">Explore Our Programmes</h1>
-
+<form method="GET" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Search programmes (e.g. Cyber, AI, Machine Learning)" 
+               value="<?= htmlspecialchars($search ?? '') ?>">
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+</form>
     <?php if (empty($programmes)): ?>
-        <div class="alert alert-info text-center">No programmes available at the moment.</div>
+        <div class="alert alert-info text-center">
+            No programmes match your filter<?php if ($levelFilter): ?> (<?= $levelFilter === 'ug' ? 'Undergraduate' : 'Postgraduate' ?>)<?php endif; ?> at the moment.
+        </div>
     <?php else: ?>
         <div class="row">
             <?php foreach ($programmes as $prog): ?>
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm">
                         <?php if (!empty($prog['Image'])): ?>
-                            <img src="<?= htmlspecialchars($prog['Image']) ?>" class="card-img-top" alt="Image for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
+                            <img src="<?= htmlspecialchars($prog['Image']) ?>" 
+                                 class="card-img-top" 
+                                 alt="Programme image for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
                         <?php else: ?>
-                            <img src="https://via.placeholder.com/400x180?text=<?= urlencode($prog['ProgrammeName']) ?>" class="card-img-top" alt="Placeholder for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
+                            <img src="https://via.placeholder.com/400x180?text=<?= urlencode(substr($prog['ProgrammeName'], 0, 20)) ?>" 
+                                 class="card-img-top" 
+                                 alt="Placeholder image for <?= htmlspecialchars($prog['ProgrammeName']) ?>">
                         <?php endif; ?>
-                        <div class="card-body">
+
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title"><?= htmlspecialchars($prog['ProgrammeName']) ?></h5>
-                            <p class="card-text"><?= htmlspecialchars(substr($prog['Description'] ?? 'No description available.', 0, 100)) ?>...</p>
-                            <a href="programme-details.php?id=<?= $prog['ProgrammeID'] ?>" class="btn btn-primary">View Details</a>
+                            <p class="card-text flex-grow-1">
+                                <?= htmlspecialchars(substr($prog['Description'] ?? 'No description available.', 0, 100)) ?>...
+                            </p>
+                            <a href="programme-details.php?id=<?= $prog['ProgrammeID'] ?>" 
+                               class="btn btn-primary mt-auto">View Details</a>
                         </div>
                     </div>
                 </div>
