@@ -62,6 +62,10 @@ $interests = $stmt->fetchAll();
             </tbody>
         </table>
     <?php endif; ?>
+    <!-- CSV Export Button -->
+<div class="mt-4 text-end">
+    <a href="export-csv.php" class="btn btn-info">Export All to CSV</a>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
