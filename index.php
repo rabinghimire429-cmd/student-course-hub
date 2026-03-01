@@ -50,16 +50,15 @@ $programmes = $stmt->fetchAll();
         body { background-color: #f8f9fa; }
         .nav-link.active { font-weight: bold; color: #ffc107 !important; border-bottom: 2px solid #ffc107; }
         .navbar-brand img { max-height: 45px; width: auto; }
-        footer img { max-height: 60px; width: auto; }
     </style>
 </head>
 <body>
 
-<!-- Navbar with your bluebird-logo.png from images folder -->
+<!-- Navbar with logo + Staff Directory link -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="index.php">
-            <img src="images/bluebird-logo.png" alt="Bluebird College official logo" class="me-2">
+            <img src="images/bluebird-logo.png" alt="Bluebird College logo" class="me-2">
             Bluebird College
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -75,6 +74,9 @@ $programmes = $stmt->fetchAll();
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?= $levelFilter === 'pg' ? 'active' : '' ?>" href="index.php?level=pg">Postgraduate</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="staff-directory.php">Staff Directory</a>
                 </li>
             </ul>
         </div>

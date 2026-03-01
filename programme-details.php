@@ -1,6 +1,4 @@
 <?php
-// programme-details.php - Bluebird College programme details
-
 require_once 'db.php';
 session_start();
 
@@ -13,7 +11,7 @@ $progID = (int)$_GET['id'];
 // Fetch programme and leader
 $stmt = $pdo->prepare("
     SELECT p.ProgrammeName, p.Description, p.Image, l.LevelName,
-           s.Name AS Leader, s.Email AS LeaderEmail, s.Phone AS LeaderPhone, s.Bio AS LeaderBio
+           s.Name AS Leader, s.Email AS LeaderEmail, s.Phone AS LeaderPhone, s.Bio AS LeaderBio, s.ProfileImage AS LeaderImage
     FROM Programmes p
     JOIN Levels l ON p.LevelID = l.LevelID
     JOIN Staff s ON p.ProgrammeLeaderID = s.StaffID
@@ -27,7 +25,7 @@ if (!$programme) {
     exit;
 }
 
-// Fetch modules by year (DISTINCT to avoid duplicates)
+// Fetch modules by year (DISTINCT prevents duplicates)
 $stmt = $pdo->prepare("
     SELECT DISTINCT pm.Year, m.ModuleName, m.Description, m.Image, s.Name AS ModuleLeader
     FROM ProgrammeModules pm
@@ -53,12 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare("INSERT INTO InterestedStudents (ProgrammeID, StudentName, Email) VALUES (?, ?, ?)");
             $stmt->execute([$progID, $name, $email]);
-            $msg = '<div class="alert alert-success">Interest registered!</div>';
+            $msg = '<div class="alert alert-success">Interest registered successfully!</div>';
         } catch (PDOException $e) {
-            $msg = '<div class="alert alert-warning">You already registered for this programme.</div>';
+            $msg = '<div class="alert alert-warning">You have already registered interest in this programme.</div>';
         }
     } else {
-        $msg = '<div class="alert alert-danger">Valid name and email required.</div>';
+        $msg = '<div class="alert alert-danger">Please provide a valid name and email.</div>';
     }
 }
 ?>
@@ -75,11 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .navbar-brand img { max-height: 45px; width: auto; }
         footer img { max-height: 60px; width: auto; }
         .module-img { max-height: 180px; object-fit: cover; }
+        .leader-img { max-width: 150px; border-radius: 50%; }
     </style>
 </head>
 <body>
 
-<!-- Navbar with logo -->
+<!-- Navbar with logo + Staff Directory link -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="index.php">
@@ -91,7 +90,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Back to Programmes</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">Back to Programmes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="staff-directory.php">Staff Directory</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -105,11 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <p><strong>Level:</strong> <?= htmlspecialchars($programme['LevelName']) ?></p>
-    <p><strong>Programme Leader:</strong> <?= htmlspecialchars($programme['Leader']) ?></p>
-    <p><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($programme['LeaderEmail'] ?? 'Not available') ?>">
-        <?= htmlspecialchars($programme['LeaderEmail'] ?? 'Not available') ?>
+
+    <h5>Programme Leader</h5>
+    <p><strong>Name:</strong> <?= htmlspecialchars($programme['Leader']) ?></p>
+    <?php if (!empty($programme['LeaderImage'])): ?>
+        <img src="<?= htmlspecialchars($programme['LeaderImage']) ?>" class="leader-img mb-3" alt="Profile photo of <?= htmlspecialchars($programme['Leader']) ?>">
+    <?php endif; ?>
+    <p><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($programme['LeaderEmail'] ?? 'N/A') ?>">
+        <?= htmlspecialchars($programme['LeaderEmail'] ?? 'N/A') ?>
     </a></p>
-    <p><strong>Phone:</strong> <?= htmlspecialchars($programme['LeaderPhone'] ?? 'Not available') ?></p>
+    <p><strong>Phone:</strong> <?= htmlspecialchars($programme['LeaderPhone'] ?? 'N/A') ?></p>
     <p><strong>Bio:</strong> <?= nl2br(htmlspecialchars($programme['LeaderBio'] ?? 'No bio available.')) ?></p>
 
     <h2 class="mt-5">Modules by Year</h2>
@@ -121,9 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row g-4">
                 <?php foreach ($yearModules as $mod): ?>
                     <div class="col-md-6">
-                        <div class="card h-100">
+                        <div class="card h-100 shadow-sm">
                             <?php if (!empty($mod['Image'])): ?>
-                                <img src="<?= htmlspecialchars($mod['Image']) ?>" class="card-img-top module-img" alt="<?= htmlspecialchars($mod['ModuleName']) ?>">
+                                <img src="<?= htmlspecialchars($mod['Image']) ?>" class="card-img-top module-img" alt="Module image: <?= htmlspecialchars($mod['ModuleName']) ?>">
                             <?php endif; ?>
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($mod['ModuleName']) ?></h5>
@@ -148,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="form-label">Email Address</label>
             <input type="email" name="email" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
+        <button type="submit" class="btn btn-primary">Register Interest</button>
     </form>
 </div>
 
