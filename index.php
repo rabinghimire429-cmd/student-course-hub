@@ -49,28 +49,40 @@ $programmes = $stmt->fetchAll();
         .card-img-top { height: 180px; object-fit: cover; }
         body { background-color: #f8f9fa; }
         .nav-link.active { font-weight: bold; color: #ffc107 !important; border-bottom: 2px solid #ffc107; }
+        .navbar-brand img { max-height: 45px; width: auto; }
+        footer img { max-height: 60px; width: auto; }
     </style>
 </head>
 <body>
 
+<!-- Navbar with your bluebird-logo.png from images folder -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.php">Bluebird College</a>
+        <a class="navbar-brand d-flex align-items-center" href="index.php">
+            <img src="images/bluebird-logo.png" alt="Bluebird College official logo" class="me-2">
+            Bluebird College
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link <?= $levelFilter === '' ? 'active' : '' ?>" href="index.php">All Programmes</a></li>
-                <li class="nav-item"><a class="nav-link <?= $levelFilter === 'ug' ? 'active' : '' ?>" href="index.php?level=ug">Undergraduate</a></li>
-                <li class="nav-item"><a class="nav-link <?= $levelFilter === 'pg' ? 'active' : '' ?>" href="index.php?level=pg">Postgraduate</a></li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $levelFilter === '' ? 'active' : '' ?>" href="index.php">All Programmes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $levelFilter === 'ug' ? 'active' : '' ?>" href="index.php?level=ug">Undergraduate</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $levelFilter === 'pg' ? 'active' : '' ?>" href="index.php?level=pg">Postgraduate</a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="container my-5">
-    <h1 class="text-center mb-5">Bluebird College Programmes</h1>
+    <h1 class="text-center mb-5">Explore Programmes at Bluebird College</h1>
 
     <!-- Search Form -->
     <form method="GET" class="mb-4">
@@ -81,7 +93,9 @@ $programmes = $stmt->fetchAll();
     </form>
 
     <?php if (empty($programmes)): ?>
-        <div class="alert alert-info text-center">No programmes match your criteria. Try different filters or search terms.</div>
+        <div class="alert alert-info text-center">
+            No programmes match your criteria — try different filters or search terms.
+        </div>
     <?php else: ?>
         <div class="row g-4">
             <?php foreach ($programmes as $prog): ?>
@@ -103,6 +117,14 @@ $programmes = $stmt->fetchAll();
         </div>
     <?php endif; ?>
 </div>
+
+<!-- Footer with logo -->
+<footer class="bg-dark text-white text-center py-4 mt-5">
+    <div class="container">
+        <img src="images/bluebird-logo.png" alt="Bluebird College logo" style="height: 60px; margin-bottom: 10px;">
+        <p class="mb-0">© <?= date('Y') ?> Bluebird College. All rights reserved.</p>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
