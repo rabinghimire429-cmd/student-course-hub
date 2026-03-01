@@ -1,4 +1,6 @@
 <?php
+// programme-details.php - Bluebird College programme details
+
 require_once 'db.php';
 session_start();
 
@@ -8,10 +10,10 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 }
 $progID = (int)$_GET['id'];
 
-// Fetch programme + leader
+// Fetch programme and leader
 $stmt = $pdo->prepare("
     SELECT p.ProgrammeName, p.Description, p.Image, l.LevelName,
-           s.Name AS Leader, s.Email AS LeaderEmail, s.Phone AS LeaderPhone, s.Bio AS LeaderBio, s.ProfileImage AS LeaderImage
+           s.Name AS Leader, s.Email AS LeaderEmail, s.Phone AS LeaderPhone, s.Bio AS LeaderBio
     FROM Programmes p
     JOIN Levels l ON p.LevelID = l.LevelID
     JOIN Staff s ON p.ProgrammeLeaderID = s.StaffID
@@ -25,9 +27,9 @@ if (!$programme) {
     exit;
 }
 
-// Fetch modules by year
+// Fetch modules by year (DISTINCT to avoid duplicates)
 $stmt = $pdo->prepare("
-    SELECT pm.Year, m.ModuleName, m.Description, m.Image, s.Name AS ModuleLeader
+    SELECT DISTINCT pm.Year, m.ModuleName, m.Description, m.Image, s.Name AS ModuleLeader
     FROM ProgrammeModules pm
     JOIN Modules m ON pm.ModuleID = m.ModuleID
     JOIN Staff s ON m.ModuleLeaderID = s.StaffID
@@ -42,7 +44,7 @@ foreach ($modules as $m) {
     $modulesByYear[$m['Year']][] = $m;
 }
 
-// Register interest
+// Register interest form
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
@@ -70,9 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
-        .module-img { max-height: 200px; object-fit: cover; }
         .navbar-brand img { max-height: 45px; width: auto; }
         footer img { max-height: 60px; width: auto; }
+        .module-img { max-height: 180px; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -104,19 +106,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <p><strong>Level:</strong> <?= htmlspecialchars($programme['LevelName']) ?></p>
     <p><strong>Programme Leader:</strong> <?= htmlspecialchars($programme['Leader']) ?></p>
-    <p><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($programme['LeaderEmail'] ?? 'N/A') ?>">
-        <?= htmlspecialchars($programme['LeaderEmail'] ?? 'N/A') ?>
+    <p><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($programme['LeaderEmail'] ?? 'Not available') ?>">
+        <?= htmlspecialchars($programme['LeaderEmail'] ?? 'Not available') ?>
     </a></p>
-    <p><strong>Phone:</strong> <?= htmlspecialchars($programme['LeaderPhone'] ?? 'N/A') ?></p>
-    <p><strong>Bio:</strong> <?= nl2br(htmlspecialchars($programme['LeaderBio'] ?? 'No bio.')) ?></p>
+    <p><strong>Phone:</strong> <?= htmlspecialchars($programme['LeaderPhone'] ?? 'Not available') ?></p>
+    <p><strong>Bio:</strong> <?= nl2br(htmlspecialchars($programme['LeaderBio'] ?? 'No bio available.')) ?></p>
 
     <h2 class="mt-5">Modules by Year</h2>
     <?php if (empty($modulesByYear)): ?>
-        <p>No modules listed.</p>
+        <p class="text-muted">No modules listed yet.</p>
     <?php else: ?>
         <?php foreach ($modulesByYear as $year => $yearModules): ?>
             <h4>Year <?= $year ?></h4>
-            <div class="row g-3">
+            <div class="row g-4">
                 <?php foreach ($yearModules as $mod): ?>
                     <div class="col-md-6">
                         <div class="card h-100">
@@ -126,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($mod['ModuleName']) ?></h5>
                                 <p class="card-text"><strong>Leader:</strong> <?= htmlspecialchars($mod['ModuleLeader']) ?></p>
-                                <p><?= htmlspecialchars($mod['Description'] ?? 'No description.') ?></p>
+                                <p class="card-text"><?= htmlspecialchars($mod['Description'] ?? 'No description.') ?></p>
                             </div>
                         </div>
                     </div>
@@ -135,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <h2 class="mt-5">Register Interest</h2>
+    <h2 class="mt-5">Register Your Interest</h2>
     <?= $msg ?>
     <form method="POST" class="border p-4 bg-white rounded">
         <div class="mb-3">
@@ -143,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="name" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Email</label>
+            <label class="form-label">Email Address</label>
             <input type="email" name="email" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
