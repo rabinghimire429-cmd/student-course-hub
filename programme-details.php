@@ -6,12 +6,12 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: index.php');
     exit;
 }
-
 $progID = (int)$_GET['id'];
 
-// Get programme + leader + level
+// Fetch programme + leader details
 $stmt = $pdo->prepare("
-    SELECT p.ProgrammeName, p.Description, p.Image, l.LevelName, s.Name AS Leader
+    SELECT p.ProgrammeName, p.Description, p.Image, l.LevelName,
+           s.Name AS Leader, s.Email AS LeaderEmail, s.Phone AS LeaderPhone, s.Bio AS LeaderBio, s.ProfileImage AS LeaderImage
     FROM Programmes p
     JOIN Levels l ON p.LevelID = l.LevelID
     JOIN Staff s ON p.ProgrammeLeaderID = s.StaffID
@@ -25,9 +25,9 @@ if (!$programme) {
     exit;
 }
 
-// Get modules grouped by year
+// Fetch modules by year
 $stmt = $pdo->prepare("
-    SELECT pm.Year, m.ModuleName, m.Description, s.Name AS ModuleLeader
+    SELECT pm.Year, m.ModuleName, m.Description, m.Image, s.Name AS ModuleLeader
     FROM ProgrammeModules pm
     JOIN Modules m ON pm.ModuleID = m.ModuleID
     JOIN Staff s ON m.ModuleLeaderID = s.StaffID
@@ -42,29 +42,21 @@ foreach ($modules as $m) {
     $modulesByYear[$m['Year']][] = $m;
 }
 
-// Handle register interest
+// Register interest form handling
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name  = trim($_POST['name']  ?? '');
+    $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
-
     if ($name && filter_var($email, FILTER_VALIDATE_EMAIL)) {
         try {
-            $stmt = $pdo->prepare("
-                INSERT INTO InterestedStudents (ProgrammeID, StudentName, Email)
-                VALUES (?, ?, ?)
-            ");
+            $stmt = $pdo->prepare("INSERT INTO InterestedStudents (ProgrammeID, StudentName, Email) VALUES (?, ?, ?)");
             $stmt->execute([$progID, $name, $email]);
-            $msg = '<div class="alert alert-success">Interest registered! You will receive updates.</div>';
+            $msg = '<div class="alert alert-success">Interest registered successfully!</div>';
         } catch (PDOException $e) {
-            if ($e->getCode() == 23000) { // duplicate key
-                $msg = '<div class="alert alert-warning">You have already registered interest in this programme.</div>';
-            } else {
-                $msg = '<div class="alert alert-danger">Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
-            }
+            $msg = '<div class="alert alert-warning">You have already registered interest in this programme.</div>';
         }
     } else {
-        $msg = '<div class="alert alert-danger">Please enter a valid name and email.</div>';
+        $msg = '<div class="alert alert-danger">Please provide a valid name and email.</div>';
     }
 }
 ?>
@@ -74,14 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($programme['ProgrammeName']) ?> – Details</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Bluebird College – <?= htmlspecialchars($programme['ProgrammeName']) ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.php">Student Course Hub</a>
+        <a class="navbar-brand" href="index.php">Bluebird College</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -96,17 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container my-5">
     <h1 class="mb-4"><?= htmlspecialchars($programme['ProgrammeName']) ?></h1>
 
-    <div class="row">
-        <div class="col-md-8">
-            <p><strong>Level:</strong> <?= htmlspecialchars($programme['LevelName']) ?></p>
-            <p><strong>Programme Leader:</strong> <?= htmlspecialchars($programme['Leader']) ?></p>
-            <p><?= nl2br(htmlspecialchars($programme['Description'] ?? 'No detailed description available.')) ?></p>
+    <?php if (!empty($programme['Image'])): ?>
+        <img src="<?= htmlspecialchars($programme['Image']) ?>" class="img-fluid rounded mb-4" alt="Main image for <?= htmlspecialchars($programme['ProgrammeName']) ?> programme at Bluebird College">
+    <?php endif; ?>
 
-            <?php if (!empty($programme['Image'])): ?>
-                <img src="<?= htmlspecialchars($programme['Image']) ?>" class="img-fluid rounded mb-4" alt="Visual for <?= htmlspecialchars($programme['ProgrammeName']) ?>">
-            <?php endif; ?>
-        </div>
-    </div>
+    <p><strong>Level:</strong> <?= htmlspecialchars($programme['LevelName']) ?></p>
+    <p><strong>Programme Leader:</strong> <?= htmlspecialchars($programme['Leader']) ?></p>
+    <p><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($programme['LeaderEmail'] ?? 'Not available') ?>">
+        <?= htmlspecialchars($programme['LeaderEmail'] ?? 'Not available') ?>
+    </a></p>
+    <p><strong>Phone:</strong> <?= htmlspecialchars($programme['LeaderPhone'] ?? 'Not available') ?></p>
+    <p><strong>Bio:</strong> <?= nl2br(htmlspecialchars($programme['LeaderBio'] ?? 'No bio available.')) ?></p>
 
     <h2 class="mt-5">Modules by Year</h2>
     <?php if (empty($modulesByYear)): ?>
@@ -114,28 +106,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php else: ?>
         <?php foreach ($modulesByYear as $year => $yearModules): ?>
             <h4>Year <?= $year ?></h4>
-            <div class="accordion mb-4" id="year<?= $year ?>">
-                <?php foreach ($yearModules as $idx => $mod): ?>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button <?= $idx > 0 ? 'collapsed' : '' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#mod<?= $year ?>-<?= $idx ?>">
-                                <?= htmlspecialchars($mod['ModuleName']) ?> – Leader: <?= htmlspecialchars($mod['ModuleLeader']) ?>
-                            </button>
-                        </h2>
-                        <div id="mod<?= $year ?>-<?= $idx ?>" class="accordion-collapse collapse <?= $idx === 0 ? 'show' : '' ?>">
-                            <div class="accordion-body">
-                                <?= htmlspecialchars($mod['Description'] ?? 'No description.') ?>
-                            </div>
-                        </div>
-                    </div>
+            <ul class="list-group mb-4">
+                <?php foreach ($yearModules as $mod): ?>
+                    <li class="list-group-item">
+                        <strong><?= htmlspecialchars($mod['ModuleName']) ?></strong> – Leader: <?= htmlspecialchars($mod['ModuleLeader']) ?>
+                        <?php if (!empty($mod['Image'])): ?>
+                            <img src="<?= htmlspecialchars($mod['Image']) ?>" class="img-fluid rounded mt-2" alt="Illustration for <?= htmlspecialchars($mod['ModuleName']) ?> module" style="max-height: 200px;">
+                        <?php endif; ?>
+                        <p class="mt-2"><?= htmlspecialchars($mod['Description'] ?? 'No description.') ?></p>
+                    </li>
                 <?php endforeach; ?>
-            </div>
+            </ul>
         <?php endforeach; ?>
     <?php endif; ?>
 
     <h2 class="mt-5">Register Your Interest</h2>
-    <?= $msg ?? '' ?>
-    <form method="post" class="border p-4 bg-white rounded">
+    <?= $msg ?>
+    <form method="POST" class="border p-4 bg-white rounded">
         <div class="mb-3">
             <label class="form-label">Full Name</label>
             <input type="text" name="name" class="form-control" required>
@@ -148,6 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
