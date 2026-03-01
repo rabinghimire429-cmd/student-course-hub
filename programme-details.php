@@ -61,45 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bluebird College – <?= htmlspecialchars($programme['ProgrammeName']) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand img { max-height: 45px; width: auto; }
-        footer img { max-height: 60px; width: auto; }
-        .module-img { max-height: 180px; object-fit: cover; }
-        .leader-img { max-width: 150px; border-radius: 50%; }
-    </style>
-</head>
-<body>
-
-<!-- Navbar with logo + Staff Directory link -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="index.php">
-            <img src="images/bluebird-logo.png" alt="Bluebird College logo" class="me-2">
-            Bluebird College
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.php">Back to Programmes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="staff-directory.php">Staff Directory</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<?php include 'header.php'; ?>
 
 <div class="container my-5">
     <h1 class="mb-4"><?= htmlspecialchars($programme['ProgrammeName']) ?></h1>
@@ -161,14 +123,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 </div>
 
-<!-- Footer with logo -->
-<footer class="bg-dark text-white text-center py-4 mt-5">
-    <div class="container">
-        <img src="images/bluebird-logo.png" alt="Bluebird College logo" style="height: 60px; margin-bottom: 10px;">
-        <p class="mb-0">© <?= date('Y') ?> Bluebird College. All rights reserved.</p>
-    </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php include 'footer.php'; ?>

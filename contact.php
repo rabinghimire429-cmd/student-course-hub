@@ -1,0 +1,23 @@
+<?php include 'header.php'; ?>
+
+<div class="container my-5">
+    <h1 class="text-center mb-4">Contact Us</h1>
+
+    <form method="POST" class="border p-4 bg-white rounded">
+        <div class="mb-3">
+            <label class="form-label">Your Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea name="message" class="form-control" rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+</div>
+
+<?php include 'footer.php'; ?>
