@@ -1,0 +1,10 @@
+# student-course-hub/.htaccess
+Options -Indexes
+DirectoryIndex index.php
+
+# Enable error reporting
+php_flag display_errors on
+php_value error_reporting E_ALL
+
+# Redirect 404 errors to a custom page - UPDATED with correct folder name
+ErrorDocument 404 /student-course-hub/404.php
