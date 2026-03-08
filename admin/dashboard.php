@@ -50,23 +50,6 @@ $interested_students = $stmt->fetchColumn();
 $sql = "SELECT COUNT(*) FROM contactmessages WHERE IsRead = 0";
 $stmt = $pdo->query($sql);
 $unread_inquiries = $stmt->fetchColumn();
-
-// Get 5 most recent interested students
-$sql = "SELECT i.StudentName, i.Email, i.RegisteredAt, p.ProgrammeName 
-        FROM interested_students i 
-        JOIN Programmes p ON i.ProgrammeID = p.ProgrammeID 
-        ORDER BY i.RegisteredAt DESC 
-        LIMIT 5";
-$stmt = $pdo->query($sql);
-$recent_interests = $stmt->fetchAll();
-
-// Get 5 most recent contact messages
-$sql = "SELECT Name, Email, Message, SubmittedAt, IsRead 
-        FROM contactmessages 
-        ORDER BY SubmittedAt DESC 
-        LIMIT 5";
-$stmt = $pdo->query($sql);
-$recent_messages = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -76,14 +59,12 @@ $recent_messages = $stmt->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Bluebird College</title>
     
-    <!-- Bootstrap CSS - for styling -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons - for nice icons -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
-        /* Simple custom CSS */
         body {
             background-color: #f4f6f9;
             font-family: Arial, sans-serif;
@@ -145,11 +126,12 @@ $recent_messages = $stmt->fetchAll();
         .action-card {
             background-color: white;
             border-radius: 8px;
-            padding: 25px 20px;
+            padding: 30px 20px;
             text-align: center;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s;
+            height: 100%;
         }
         
         .action-card:hover {
@@ -158,7 +140,7 @@ $recent_messages = $stmt->fetchAll();
         }
         
         .action-icon {
-            font-size: 40px;
+            font-size: 48px;
             margin-bottom: 15px;
         }
         
@@ -168,7 +150,7 @@ $recent_messages = $stmt->fetchAll();
         .action-icon.purple { color: #9b59b6; }
         
         .action-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
         }
@@ -176,12 +158,12 @@ $recent_messages = $stmt->fetchAll();
         .action-desc {
             color: #7f8c8d;
             font-size: 14px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .btn-custom {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: none;
             border-radius: 5px;
             color: white;
@@ -202,29 +184,13 @@ $recent_messages = $stmt->fetchAll();
             color: white;
         }
         
-        .recent-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .recent-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ecf0f1;
-        }
-        
-        .recent-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        
-        .recent-item:last-child {
-            border-bottom: none;
+        .count-badge {
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 12px;
+            margin-left: 5px;
         }
         
         .footer {
@@ -296,7 +262,7 @@ $recent_messages = $stmt->fetchAll();
         </div>
     </div>
 
-    <!-- Quick Actions Row -->
+    <!-- Quick Actions Row - ONLY THE 4 MAIN CARDS -->
     <h3 class="mb-3">Quick Actions</h3>
     <div class="row mb-5">
         <div class="col-md-3">
@@ -306,7 +272,9 @@ $recent_messages = $stmt->fetchAll();
                 </div>
                 <div class="action-title">Manage Programmes</div>
                 <div class="action-desc">Add, edit, delete programmes and modules</div>
-                <a href="manage-programmes.php" class="btn-custom blue">Go to Programmes</a>
+                <a href="manage-programmes.php" class="btn-custom blue">
+                    <i class="bi bi-arrow-right-circle"></i> Go to Programmes
+                </a>
             </div>
         </div>
         
@@ -317,7 +285,9 @@ $recent_messages = $stmt->fetchAll();
                 </div>
                 <div class="action-title">Staff Management</div>
                 <div class="action-desc">Add, edit, delete staff members</div>
-                <a href="manage-staff.php" class="btn-custom green">Manage Staff</a>
+                <a href="manage-staff.php" class="btn-custom green">
+                    <i class="bi bi-arrow-right-circle"></i> Manage Staff
+                </a>
             </div>
         </div>
         
@@ -327,8 +297,13 @@ $recent_messages = $stmt->fetchAll();
                     <i class="bi bi-envelope-fill"></i>
                 </div>
                 <div class="action-title">Student Interests</div>
-                <div class="action-desc">View interested students (<?php echo $interested_students; ?>)</div>
-                <a href="view-interested.php" class="btn-custom orange">View List</a>
+                <div class="action-desc">
+                    View interested students 
+                    <span class="count-badge"><?php echo $interested_students; ?></span>
+                </div>
+                <a href="view-interested.php" class="btn-custom orange">
+                    <i class="bi bi-arrow-right-circle"></i> View List
+                </a>
             </div>
         </div>
         
@@ -338,78 +313,36 @@ $recent_messages = $stmt->fetchAll();
                     <i class="bi bi-chat-dots-fill"></i>
                 </div>
                 <div class="action-title">Contact Inquiries</div>
-                <div class="action-desc">View messages (<?php echo $unread_inquiries; ?> unread)</div>
-                <a href="view-inquiries.php" class="btn-custom purple">View Inquiries</a>
+                <div class="action-desc">
+                    View messages 
+                    <span class="count-badge"><?php echo $unread_inquiries; ?> unread</span>
+                </div>
+                <a href="view-inquiries.php" class="btn-custom purple">
+                    <i class="bi bi-arrow-right-circle"></i> View Inquiries
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Recent Activity Row -->
+    <!-- Quick Info Row - Optional summary -->
     <div class="row">
-        <!-- Recent Interested Students -->
-        <div class="col-md-6">
-            <div class="recent-card">
-                <div class="recent-title">
-                    <i class="bi bi-star-fill text-warning"></i> Recent Interested Students
-                </div>
-                
-                <?php if (empty($recent_interests)): ?>
-                    <p class="text-muted">No recent interests yet.</p>
-                <?php else: ?>
-                    <?php foreach ($recent_interests as $interest): ?>
-                    <div class="recent-item">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong><?php echo htmlspecialchars($interest['StudentName']); ?></strong>
-                                <br>
-                                <small class="text-muted"><?php echo htmlspecialchars($interest['Email']); ?></small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-primary"><?php echo htmlspecialchars($interest['ProgrammeName']); ?></span>
-                                <br>
-                                <small class="text-muted"><?php echo date('d/m/Y H:i', strtotime($interest['RegisteredAt'])); ?></small>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Recent Messages -->
-        <div class="col-md-6">
-            <div class="recent-card">
-                <div class="recent-title">
-                    <i class="bi bi-envelope-fill text-info"></i> Recent Messages
-                </div>
-                
-                <?php if (empty($recent_messages)): ?>
-                    <p class="text-muted">No recent messages.</p>
-                <?php else: ?>
-                    <?php foreach ($recent_messages as $msg): ?>
-                    <div class="recent-item">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong><?php echo htmlspecialchars($msg['Name']); ?></strong>
-                                <?php if (!$msg['IsRead']): ?>
-                                    <span class="badge bg-warning">New</span>
-                                <?php endif; ?>
-                                <br>
-                                <small class="text-muted"><?php echo htmlspecialchars(substr($msg['Message'], 0, 50)); ?>...</small>
-                            </div>
-                            <small class="text-muted"><?php echo date('d/m/Y H:i', strtotime($msg['SubmittedAt'])); ?></small>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>Quick Summary:</strong> 
+                <?php echo $total_programmes; ?> programmes, 
+                <?php echo $total_modules; ?> modules, 
+                <?php echo $total_staff; ?> staff members,
+                <?php echo $interested_students; ?> interested students,
+                <?php echo $unread_inquiries; ?> unread messages.
             </div>
         </div>
     </div>
 
     <!-- Logout Button -->
     <div class="row mt-4">
-        <div class="col-12">
-            <a href="logout.php" class="btn-custom red" style="width: auto; padding: 10px 30px;">
+        <div class="col-12 text-center">
+            <a href="logout.php" class="btn btn-danger btn-lg">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>
         </div>
