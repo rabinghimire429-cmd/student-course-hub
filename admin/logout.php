@@ -1,24 +1,35 @@
 <?php
-// Start session to destroy it
+// =============================================
+// Admin Logout Script
+// =============================================
+
+// Start session
 session_start();
 
-// Include database connection
-require_once '../db.php';
+// Clear all session variables
+$_SESSION = array();
 
-// If user is logged in, remove remember token from database
-if (isset($_SESSION['admin_id'])) {
-    $sql = "UPDATE Admins SET RememberToken = NULL WHERE AdminID = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$_SESSION['admin_id']]);
+// If session uses cookies, delete the session cookie
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
 }
 
-// Destroy the session (log out)
+// Destroy the session
 session_destroy();
 
-// Delete remember me cookie by setting it to expire in the past
-setcookie('remember_token', '', time() - 3600, "/");
+// Delete remember me cookie if it exists
+if (isset($_COOKIE['remember_token'])) {
+    setcookie('remember_token', '', time() - 3600, '/');
+}
 
-// Redirect to login page
-header('Location: login.php');
+// Clear any other cookies
+setcookie('PHPSESSID', '', time() - 3600, '/');
+
+// Redirect to homepage with success message
+header('Location: ../index.php?logout=success');
 exit;
 ?>
