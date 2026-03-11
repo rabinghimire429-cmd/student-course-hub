@@ -1,82 +1,43 @@
 <?php
-// Start session to store login information
+// Start session
 session_start();
 
 // Include database connection
 require_once '../db.php';
 
-// Check if user is already logged in, redirect to dashboard
+// If already logged in, redirect to dashboard
 if (isset($_SESSION['admin_id'])) {
     header('Location: dashboard.php');
     exit;
 }
 
-$error = ''; // Variable to store error messages
+$error = '';
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // Get username and password from form
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    $remember = isset($_POST['remember']); // Check if remember me is checked
     
-    // Basic validation
     if (empty($username) || empty($password)) {
         $error = 'Please enter both username and password.';
     } else {
-        
-        // Search for admin in database
+        // Check database for admin
         $sql = "SELECT AdminID, Username, PasswordHash FROM Admins WHERE Username = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$username]);
         $admin = $stmt->fetch();
         
-        // Check if admin exists and password is correct
         if ($admin && password_verify($password, $admin['PasswordHash'])) {
-            
-            // Login successful - store admin ID in session
+            // Login successful
             $_SESSION['admin_id'] = $admin['AdminID'];
-            
-            // If remember me is checked, set a cookie for 30 days
-            if ($remember) {
-                // Generate random token
-                $token = bin2hex(random_bytes(32));
-                $hashed_token = hash('sha256', $token);
-                
-                // Save token in database
-                $sql = "UPDATE Admins SET RememberToken = ? WHERE AdminID = ?";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([$hashed_token, $admin['AdminID']]);
-                
-                // Set cookie (30 days)
-                setcookie('remember_token', $token, time() + (86400 * 30), "/");
-            }
+            $_SESSION['admin_username'] = $admin['Username'];
             
             // Redirect to dashboard
             header('Location: dashboard.php');
             exit;
-            
         } else {
             $error = 'Invalid username or password.';
         }
-    }
-}
-
-// Check for remember me cookie (if not logged in)
-if (!isset($_SESSION['admin_id']) && isset($_COOKIE['remember_token'])) {
-    $token = $_COOKIE['remember_token'];
-    $hashed_token = hash('sha256', $token);
-    
-    $sql = "SELECT AdminID FROM Admins WHERE RememberToken = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$hashed_token]);
-    $admin = $stmt->fetch();
-    
-    if ($admin) {
-        $_SESSION['admin_id'] = $admin['AdminID'];
-        header('Location: dashboard.php');
-        exit;
     }
 }
 ?>
@@ -90,6 +51,8 @@ if (!isset($_SESSION['admin_id']) && isset($_COOKIE['remember_token'])) {
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
         body {
@@ -117,11 +80,11 @@ if (!isset($_SESSION['admin_id']) && isset($_COOKIE['remember_token'])) {
         
         .logo img {
             height: 60px;
+            margin-bottom: 10px;
         }
         
         .logo h3 {
-            color: #333;
-            margin-top: 10px;
+            color: #2c3e50;
         }
         
         .form-control {
@@ -152,6 +115,20 @@ if (!isset($_SESSION['admin_id']) && isset($_COOKIE['remember_token'])) {
             margin-bottom: 20px;
             border: 1px solid #f5c6cb;
         }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -164,44 +141,29 @@ if (!isset($_SESSION['admin_id']) && isset($_COOKIE['remember_token'])) {
     
     <?php if ($error): ?>
         <div class="error">
-            <?php echo htmlspecialchars($error); ?>
+            <i class="bi bi-exclamation-triangle"></i> <?php echo htmlspecialchars($error); ?>
         </div>
     <?php endif; ?>
     
     <form method="POST" action="">
         <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" 
-                   class="form-control" 
-                   id="username" 
-                   name="username" 
-                   required 
-                   autofocus>
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" required>
         </div>
         
         <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" 
-                   class="form-control" 
-                   id="password" 
-                   name="password" 
-                   required>
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required>
         </div>
         
-        <div class="mb-3 form-check">
-            <input type="checkbox" 
-                   class="form-check-input" 
-                   id="remember" 
-                   name="remember">
-            <label class="form-check-label" for="remember">Remember Me</label>
-        </div>
-        
-        <button type="submit" class="btn-login">Login</button>
+        <button type="submit" class="btn-login">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+        </button>
     </form>
     
-    <p class="text-center text-muted mt-3 small">
-        CTEC2712 Web Application Development - Group Project
-    </p>
+    <div class="back-link">
+        <a href="../index.php"><i class="bi bi-arrow-left"></i> Back to Homepage</a>
+    </div>
 </div>
 
 </body>

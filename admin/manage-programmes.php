@@ -38,12 +38,10 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// Get all programmes with module count
+// FIXED: Get all programmes WITHOUT joining Levels table
 $sql = "SELECT p.*, 
-               (SELECT COUNT(*) FROM programme_modules WHERE ProgrammeID = p.ProgrammeID) as module_count,
-               l.LevelName 
+               (SELECT COUNT(*) FROM programme_modules WHERE ProgrammeID = p.ProgrammeID) as module_count
         FROM Programmes p 
-        JOIN Levels l ON p.LevelID = l.LevelID 
         ORDER BY p.ProgrammeName";
 $stmt = $pdo->query($sql);
 $programmes = $stmt->fetchAll();
@@ -115,6 +113,20 @@ $programmes = $stmt->fetchAll();
         
         .badge-unpublished {
             background-color: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .badge-ug {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .badge-pg {
+            background-color: #9b59b6;
             color: white;
             padding: 5px 10px;
             border-radius: 4px;
@@ -194,7 +206,13 @@ $programmes = $stmt->fetchAll();
                             <td>
                                 <strong><?php echo htmlspecialchars($p['ProgrammeName']); ?></strong>
                             </td>
-                            <td><?php echo htmlspecialchars($p['LevelName']); ?></td>
+                            <td>
+                                <?php if ($p['LevelID'] == 1): ?>
+                                    <span class="badge-ug">Undergraduate</span>
+                                <?php else: ?>
+                                    <span class="badge-pg">Postgraduate</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="badge bg-info"><?php echo $p['module_count']; ?> modules</span>
                                 <a href="manage-modules.php?programme_id=<?php echo $p['ProgrammeID']; ?>" class="btn btn-sm btn-outline-primary">
