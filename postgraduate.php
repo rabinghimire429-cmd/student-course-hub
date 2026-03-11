@@ -2,59 +2,199 @@
 require_once 'db.php';
 session_start();
 
-$search = trim($_GET['search'] ?? '');
-
-$whereParts = ['LevelID = 2', 'is_published = 1'];
-$params = [];
-
-if (!empty($search)) {
-    $whereParts[] = '(ProgrammeName LIKE :search OR Description LIKE :search)';
-    $params['search'] = "%$search%";
-}
-
-$whereClause = 'WHERE ' . implode(' AND ', $whereParts);
-
-$stmt = $pdo->prepare("
-    SELECT ProgrammeID, ProgrammeName, Description, Image
-    FROM Programmes
-    $whereClause
-    ORDER BY ProgrammeName
-");
-$stmt->execute($params);
+// Get all postgraduate programmes
+$sql = "SELECT ProgrammeID, ProgrammeName, Description, Image 
+        FROM Programmes 
+        WHERE LevelID = 2 AND is_published = 1 
+        ORDER BY ProgrammeName";
+$stmt = $pdo->query($sql);
 $programmes = $stmt->fetchAll();
+
+$count = count($programmes);
 ?>
 
-<?php include 'header.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postgraduate Programmes - Bluebird College</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        
+        .navbar-brand img {
+            height: 50px;
+            margin-right: 10px;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-header h1 {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .programme-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        
+        .programme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .programme-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .programme-desc {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            transition: opacity 0.3s;
+        }
+        
+        .btn-view:hover {
+            opacity: 0.9;
+            color: white;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+            text-align: center;
+        }
+        
+        .footer img {
+            height: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
 
-<div class="container my-5 pt-5">
-    <h1 class="text-center mb-5">Postgraduate Programmes</h1>
-
-    <form method="GET" class="mb-5">
-        <div class="input-group">
-            <input type="text" name="search" class="form-control" placeholder="Search postgraduate programmes..." value="<?= htmlspecialchars($search) ?>">
-            <button type="submit" class="btn btn-primary">Search</button>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="index.php">
+            <img src="images/bluebird-logo.png" alt="Bluebird College">
+            <span>Bluebird College</span>
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="index.php">Home</a>
+            <a class="nav-link" href="undergraduate.php">Undergraduate</a>
+            <a class="nav-link" href="contact.php">Contact</a>
         </div>
-    </form>
+    </div>
+</nav>
 
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="bi bi-award"></i> Postgraduate Programmes</h1>
+        <p><?php echo $count; ?> programmes available • 1 year duration • Part-time options available</p>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    
     <?php if (empty($programmes)): ?>
-        <div class="alert alert-info text-center">No postgraduate programmes match your search.</div>
+        <div class="alert alert-info text-center">
+            No postgraduate programmes available at the moment.
+        </div>
     <?php else: ?>
-        <div class="row g-4">
+        <div class="row">
             <?php foreach ($programmes as $prog): ?>
-                <div class="col-md-4">
-                    <div class="card h-100 shadow-sm">
-                        <img src="<?= htmlspecialchars($prog['Image'] ?? 'https://via.placeholder.com/400x180') ?>" 
-                             class="card-img-top" alt="<?= htmlspecialchars($prog['ProgrammeName']) ?>">
-                        <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars($prog['ProgrammeName']) ?></h5>
-                            <p class="card-text"><?= htmlspecialchars(substr($prog['Description'] ?? 'No description', 0, 120)) ?>...</p>
-                            <a href="programme-details.php?id=<?= $prog['ProgrammeID'] ?>" class="btn btn-primary">View Details</a>
-                        </div>
-                    </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="programme-card">
+                    <h3 class="programme-title"><?php echo htmlspecialchars($prog['ProgrammeName']); ?></h3>
+                    <p class="programme-desc">
+                        <?php 
+                        $desc = $prog['Description'] ?? 'No description available.';
+                        echo htmlspecialchars(substr($desc, 0, 120)) . '...';
+                        ?>
+                    </p>
+                    <a href="programme-details.php?id=<?php echo $prog['ProgrammeID']; ?>" class="btn-view">
+                        View Details <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
+            </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+    
+    <!-- Back Button -->
+    <div class="text-center back-btn">
+        <a href="index.php" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+    
 </div>
 
-<?php include 'footer.php'; ?>
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <img src="images/bluebird-logo.png" alt="Bluebird College">
+        <p>&copy; <?php echo date('Y'); ?> Bluebird College. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
