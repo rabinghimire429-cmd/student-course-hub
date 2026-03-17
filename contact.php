@@ -280,4 +280,4 @@ include 'header.php';
                 <i class="bi bi-telephone-fill"></i>
                 <div>
                     <h4>Phone</h4>
-                    <p>+44
+                    <p>+44 55447800</p>
