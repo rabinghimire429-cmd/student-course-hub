@@ -326,7 +326,6 @@ if (empty($foundCareers)) {
         <p class="lead"><?php echo htmlspecialchars(substr($programme['Description'] ?? '', 0, 200)); ?>...</p>
     </div>
 </section>
-
 <!-- Main Content -->
 <div class="container">
     
