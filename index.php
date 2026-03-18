@@ -17,7 +17,7 @@ while ($row = $stmt->fetch()) {
 $ug_count = isset($counts[1]) ? $counts[1] : 0;
 $pg_count = isset($counts[2]) ? $counts[2] : 0;
 
-// Alumni testimonials data
+
 $alumni = [
     [
         'name' => 'Ayush Adhikari',
