@@ -350,7 +350,7 @@ if (empty($foundCareers)) {
                     </div>
                     <div class="col-md-6">
                         <p><strong>Entry Requirements:</strong> <?php echo $entryRequirements; ?></p>
-                        <p><strong>Next Start Date:</strong> September 2024, January 2025</p>
+                        <p><strong>Next Start Date:</strong> September 2026, January 2027</p>
                     </div>
                 </div>
             </div>
