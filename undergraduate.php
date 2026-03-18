@@ -2,7 +2,7 @@
 require_once 'db.php';
 session_start();
 
-// Get all undergraduate programmes
+
 $sql = "SELECT ProgrammeID, ProgrammeName, Description, Image 
         FROM Programmes 
         WHERE LevelID = 1 AND is_published = 1 
@@ -164,7 +164,7 @@ $count = count($programmes);
                     <p class="programme-desc">
                         <?php 
                         $desc = $prog['Description'] ?? 'No description available.';
-                        echo htmlspecialchars(substr($desc, 0, 120)) . '...';
+                        echo htmlspecialchars(mb_strimwidth($desc, 0, 120, "..."));
                         ?>
                     </p>
                     <a href="programme-details.php?id=<?php echo $prog['ProgrammeID']; ?>" class="btn-view">

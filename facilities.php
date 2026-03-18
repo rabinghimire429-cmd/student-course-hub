@@ -1,7 +1,4 @@
 <?php
-// =============================================
-// Bluebird College - Facilities Page
-// =============================================
 
 // Include database connection if needed
 require_once 'db.php';

@@ -74,7 +74,7 @@ include 'header.php';
     }
 </style>
 
-<!-- Page Header -->
+
 <div class="page-header">
     <div class="container">
         <h1><i class="bi bi-images"></i> Gallery</h1>
@@ -84,8 +84,7 @@ include 'header.php';
 
 <!-- Main Content -->
 <div class="container">
-    
-    <!-- Graduation Section -->
+  
     <div class="gallery-category">
         <h3><i class="bi bi-mortarboard"></i> Graduation Day</h3>
         <div class="row">
