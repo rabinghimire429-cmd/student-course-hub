@@ -59,6 +59,18 @@ $staff = $stmt->fetchAll();
             object-fit: cover;
             border-radius: 50%;
         }
+        .staff-photo-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -115,9 +127,20 @@ $staff = $stmt->fetchAll();
                         <tr>
                             <td>
                                 <?php if (!empty($member['photo'])): ?>
-                                    <img src="<?= BASE_URL . '/' . $member['photo'] ?>" class="staff-photo" alt="<?= htmlspecialchars($member['Name']) ?>">
+                                    <?php 
+                                    // Fix the image path for admin folder
+                                    $photo_path = $member['photo'];
+                                    // If path doesn't start with http or /, add ../ to go up one level
+                                    if (strpos($photo_path, 'http') !== 0 && strpos($photo_path, '/') !== 0) {
+                                        $photo_path = '../' . $photo_path;
+                                    }
+                                    ?>
+                                    <img src="<?= htmlspecialchars($photo_path) ?>" 
+                                         class="staff-photo" 
+                                         alt="<?= htmlspecialchars($member['Name']) ?>"
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'staff-photo-placeholder\'>' + '<?= strtoupper(substr($member['Name'], 0, 1)) ?>' + '</div>';">
                                 <?php else: ?>
-                                    <div class="staff-photo bg-secondary text-white d-flex align-items-center justify-content-center">
+                                    <div class="staff-photo-placeholder">
                                         <?= strtoupper(substr($member['Name'], 0, 1)) ?>
                                     </div>
                                 <?php endif; ?>
@@ -137,12 +160,12 @@ $staff = $stmt->fetchAll();
                             </td>
                             <td>
                                 <a href="edit-staff.php?id=<?= $member['StaffID'] ?>" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-pencil"></i>
+                                    <i class="bi bi-pencil"></i> Edit
                                 </a>
                                 <a href="?delete=<?= $member['StaffID'] ?>" 
                                    class="btn btn-sm btn-danger"
                                    onclick="return confirm('Are you sure you want to delete <?= htmlspecialchars($member['Name']) ?>?')">
-                                    <i class="bi bi-trash"></i>
+                                    <i class="bi bi-trash"></i> Delete
                                 </a>
                             </td>
                         </tr>
