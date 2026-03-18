@@ -10,7 +10,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $progID = (int)$_GET['id'];
 
-// Get programme details with level and leader information
+// Get programme details with level and leader details
 $sql = "SELECT p.*, 
                l.LevelName,
                s.Name as LeaderName, 
