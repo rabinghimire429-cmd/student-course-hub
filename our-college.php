@@ -111,8 +111,7 @@ include 'header.php';
 
 <!-- Main Content -->
 <div class="container">
-    
-    <!-- Vision & Mission Section -->
+ 
     <div id="vision-mission" class="college-section">
         <h2 class="section-title"><i class="bi bi-eye"></i> Vision & Mission</h2>
         
