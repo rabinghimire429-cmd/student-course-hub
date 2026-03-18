@@ -2,7 +2,7 @@
 require_once 'db.php';
 session_start();
 
-// Get all undergraduate programmes
+
 $sql = "SELECT ProgrammeID, ProgrammeName, Description, Image 
         FROM Programmes 
         WHERE LevelID = 1 AND is_published = 1 
