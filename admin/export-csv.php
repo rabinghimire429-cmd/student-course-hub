@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_id'])) {
 // Fetch all interests
 $stmt = $pdo->query("
     SELECT p.ProgrammeName, i.StudentName, i.Email, i.RegisteredAt
-    FROM InterestedStudents i
+    FROM interested_students i
     JOIN Programmes p ON i.ProgrammeID = p.ProgrammeID
     ORDER BY p.ProgrammeName, i.RegisteredAt DESC
 ");
