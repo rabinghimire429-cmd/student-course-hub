@@ -178,23 +178,4 @@ $count = count($programmes);
     
     <!-- Back Button -->
     <div class="text-center back-btn">
-        <a href="index.php" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Home
-        </a>
-    </div>
-    
-</div>
-
-<!-- Footer -->
-<footer class="footer">
-    <div class="container">
-        <img src="images/bluebird-logo.png" alt="Bluebird College">
-        <p>&copy; <?php echo date('Y'); ?> Bluebird College. All rights reserved.</p>
-    </div>
-</footer>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+        
