@@ -175,10 +175,10 @@ include 'header.php';
             <div class="staff-card">
                 <!-- Staff Image -->
                 <?php if (!empty($member['photo'])): ?>
-                    <img src="<?php echo htmlspecialchars($member['photo']); ?>" 
+                    <img src="images/<?php echo htmlspecialchars(basename($member['photo'])); ?>"
                          alt="<?php echo htmlspecialchars($member['Name']); ?>" 
                          class="staff-image">
-                <?php else: ?>
+                <?php else: ?>git
                     <div class="staff-image-placeholder">
                         <i class="bi bi-person"></i>
                     </div>
