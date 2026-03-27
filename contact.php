@@ -254,9 +254,15 @@ include 'header.php';
                 </div>
                 
                 <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+
+                <div class="form-group">
                     <label for="message">Your Message</label>
                     <textarea id="message" name="message" rows="6" required></textarea>
                 </div>
+                
                 
                 <button type="submit" class="submit-btn">
                     <i class="bi bi-send"></i> Send Message
