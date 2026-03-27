@@ -164,7 +164,12 @@ $count = count($programmes);
                     <p class="programme-desc">
                         <?php 
                         $desc = $prog['Description'] ?? 'No description available.';
-                        echo htmlspecialchars(substr($desc, 0, 120)) . '...';
+
+                           if (strlen($desc) > 120) {
+                         echo htmlspecialchars(substr($desc, 0, 120)) . '...';
+                              } else {
+                         echo htmlspecialchars($desc);
+                         }
                         ?>
                     </p>
                     <a href="programme-details.php?id=<?php echo $prog['ProgrammeID']; ?>" class="btn-view">
